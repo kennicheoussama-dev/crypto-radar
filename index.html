@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Crypto Radar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230b1020'/%3E%3Crect x='96' y='150' width='30' height='140' rx='6' fill='%2331d6a0'/%3E%3Crect x='105' y='120' width='12' height='200' rx='3' fill='%2331d6a0'/%3E%3Crect x='196' y='90' width='30' height='220' rx='6' fill='%23ff6b7d'/%3E%3Crect x='205' y='60' width='12' height='280' rx='3' fill='%23ff6b7d'/%3E%3Crect x='296' y='210' width='30' height='130' rx='6' fill='%2331d6a0'/%3E%3Crect x='305' y='180' width='12' height='190' rx='3' fill='%2331d6a0'/%3E%3Crect x='396' y='120' width='30' height='180' rx='6' fill='%2331d6a0'/%3E%3Crect x='405' y='90' width='12' height='240' rx='3' fill='%2331d6a0'/%3E%3C/svg%3E" type="image/svg+xml">
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#17223a;--text:#f3f6ff;--muted:#9aa8c3;--line:#26334e;--green:#31d6a0;--red:#ff6b7d;--blue:#79a7ff;--gold:#ffc96b}
+*{box-sizing:border-box}body{margin:0;background:#0b1020;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1100px;margin:auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#6c8cff,#35dfb0);display:grid;place-items:center;color:#091322;font-size:25px;font-weight:900}
+h1{font-size:22px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:4px}.pill{border:1px solid var(--line);background:#121a2dcc;border-radius:999px;padding:8px 12px;color:var(--muted);font-size:12px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 12px}.toolbar h3{margin:0;font-size:18px}.controls{display:flex;gap:8px;flex-wrap:wrap}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 13px;font:inherit}
+button:disabled{opacity:.5}button.primary{background:var(--blue);border-color:var(--blue);color:#071225;font-weight:750}
+button.install{background:linear-gradient(135deg,#31d6a0,#79a7ff);border:0;color:#06121f;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.coin{position:relative;background:linear-gradient(160deg,#151f35,#101727);border:1px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.coinicon{width:39px;height:39px;border-radius:13px;background:#243653;display:grid;place-items:center;font-weight:850;color:#d8e5ff;flex:none}
+.coinhead{display:flex;align-items:center;gap:10px}.coinname{font-weight:750}.symbol{color:var(--muted);font-size:12px;margin-top:2px}
+.rm{position:absolute;top:10px;left:10px;width:26px;height:26px;padding:0;border-radius:8px;font-size:12px;color:var(--muted);background:transparent;border-color:transparent}
+.price{font-size:clamp(19px,2.4vw,25px);font-weight:800;margin:18px 0 8px;direction:ltr;text-align:right}
+.change{font-size:13px;font-weight:750}.positive{color:var(--green)}.negative{color:var(--red)}
+.spark{display:block;width:100%;height:32px;margin-top:10px}
+.coinfoot{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;color:var(--muted);font-size:11px}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:18px}.section h3{margin:0 0 6px;font-size:17px}
+.hint{font-size:12px;color:var(--muted);line-height:1.8;margin:0 0 14px}
+.formrow{display:grid;grid-template-columns:1.1fr 1fr 1fr auto;gap:9px;align-items:end}.formrow.coinadd{grid-template-columns:1fr auto}
+.field label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
+.field input,.field select{width:100%;min-width:0;background:#0c1425;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}
+.alerts{display:grid;gap:9px}.alert{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#0e1728;border:1px solid var(--line);border-radius:12px;padding:12px}
+.alert.done{border-color:#31d6a055}.alert small{display:block;color:var(--muted);margin-top:4px}.alert .btns{display:flex;gap:6px}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;margin-top:14px}
+.dot{width:8px;height:8px;background:var(--gold);border-radius:50%}.dot.live{background:var(--green);box-shadow:0 0 10px #31d6a080}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#eaf2ff;color:#0b1426;padding:12px 18px;border-radius:12px;display:none;z-index:5;font-size:13px}
+.stalebar{background:#ffc96b18;border:1px solid #ffc96b66;color:var(--gold);border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.formrow{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.grid{gap:9px}.coin{padding:12px}.formrow{grid-template-columns:1fr}.formrow button{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="logo">↗</div><div><h1>Crypto Radar</h1><div class="sub">رادار العملات · تطبيق</div></div></div>
+    <div class="pill" id="lastUpdate">جارٍ الاتصال…</div>
+  </header>
+
+  <div class="stalebar" id="staleBar" hidden></div>
+
+  <div class="toolbar">
+    <h3>قائمة المراقبة</h3>
+    <div class="controls">
+      <button class="install" id="installBtn" hidden>⬇ تثبيت التطبيق</button>
+      <button id="refreshBtn">↻ تحديث</button>
+      <button id="soundBtn">🔊 الصوت</button>
+      <button id="notifBtn">🔔 الإشعارات</button>
+    </div>
+  </div>
+  <div class="grid" id="coins"><div class="coin"><div class="sub">جارٍ التحميل…</div></div></div>
+  <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">جلب الأسعار…</span></div>
+
+  <section class="section">
+    <h3>إضافة عملة</h3>
+    <p class="hint">رمز العملة فقط (SOL, ETH, DOGE...)</p>
+    <div class="formrow coinadd">
+      <div class="field"><label>الرمز</label><input id="newCoin" dir="ltr" placeholder="SOL"></div>
+      <button class="primary" id="addCoinBtn">إضافة</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>تنبيهات الأسعار</h3>
+    <div class="formrow">
+      <div class="field"><label>العملة</label><select id="alertCoin"></select></div>
+      <div class="field"><label>الشرط</label><select id="alertCondition"><option value="above">فوق</option><option value="below">تحت</option></select></div>
+      <div class="field"><label>السعر</label><input id="alertPrice" type="number" step="any" placeholder="1.25"></div>
+      <button class="primary" id="addAlert">إضافة</button>
+    </div>
+    <div style="height:12px"></div>
+    <div class="alerts" id="alertsList"><div class="empty">لا توجد تنبيهات.</div></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://data-api.binance.vision/api/v3/';
+const MAX_COINS=20;
+const $=id=>document.getElementById(id);
+
+let COINS=(()=>{try{const c=JSON.parse(localStorage.getItem('cr_coins'));if(Array.isArray(c)&&c.length)return c}catch{}return[
+ {symbol:'BTCUSDT',name:'بيتكوين',short:'BTC',icon:'₿'},
+ {symbol:'WLDUSDT',name:'وورلدكوين',short:'WLD',icon:'W'},
+ {symbol:'PEPEUSDT',name:'بيبي',short:'PEPE',icon:'🐸'},
+ {symbol:'ONDOUSDT',name:'أوندو',short:'ONDO',icon:'O'}
+]})();
+let market={},sparks={},dir={},lastOk=0,refreshing=false;
+let soundEnabled=false,notifEnabled=false,audioCtx=null;
+
+function saveCoins(){try{localStorage.setItem('cr_coins',JSON.stringify(COINS))}catch{}}
+function fmt(n){if(!Number.isFinite(n))return'—';return n>=1000?n.toLocaleString('en-US',{maximumFractionDigits:2}):n>=0.01?n.toLocaleString('en-US',{maximumFractionDigits:6}):n.toLocaleString('en-US',{maximumFractionDigits:10})}
+function toast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3500)}
+async function fetchT(url,opt={},ms=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{...opt,signal:c.signal})}finally{clearTimeout(t)}}
+function spark(arr){if(!arr||arr.length<2)return'';const w=120,h=32,min=Math.min(...arr),max=Math.max(...arr),rng=max-min||1;const pts=arr.map((v,i)=>(i/(arr.length-1)*w).toFixed(1)+','+(h-2-(v-min)/rng*(h-4)).toFixed(1)).join(' ');const up=arr[arr.length-1]>=arr[0];return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${up?'#31d6a0':'#ff6b7d'}" stroke-width="1.8" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`}
+
+function renderCoins(){
+  const box=$('coins');
+  if(!COINS.length){box.innerHTML='<div class="coin" style="grid-column:1/-1"><b>القائمة فارغة.</b></div>';return}
+  box.innerHTML=COINS.map(c=>{
+    const d=market[c.symbol],p=d?Number(d.lastPrice):NaN,ch=d?Number(d.priceChangePercent):NaN;
+    return `<article class="coin"><button class="rm" data-rm="${c.symbol}">✕</button><div class="coinhead"><div class="coinicon">${c.icon}</div><div><div class="coinname">${c.name}</div><div class="symbol">${c.short} / USDT</div></div></div><div class="price">${d?'$'+fmt(p):'—'}</div><div class="change ${ch>=0?'positive':'negative'}">${d?(ch>=0?'▲ +':'▼ ')+ch.toFixed(2)+'%':'…'}</div>${spark(sparks[c.symbol])}</article>`;
+  }).join('');
+}
+function fillSelect(){const s=$('alertCoin'),o=s.value;s.innerHTML=COINS.map(c=>`<option value="${c.symbol}">${c.short}</option>`).join('');if(COINS.some(c=>c.symbol===o))s.value=o}
+
+function setStatus(ok){
+  const stale=!ok&&lastOk>0;
+  $('staleBar').hidden=!stale;
+  $('statusDot').classList.toggle('live',ok);
+  if(ok){$('statusText').textContent='متصل';$('lastUpdate').textContent='آخر تحديث: '+new Date(lastOk).toLocaleTimeString('ar-DZ')}
+  else{$('statusText').textContent='تعذر الاتصال.';if(stale)$('staleBar').textContent='⚠ الأسعار قديمة، والتنبيهات متوقفة.';else{$('lastUpdate').textContent='غير متصل'}}
+}
+
+async function refresh(){
+  if(refreshing)return;if(!COINS.length)return;
+  refreshing=true;$('statusText').textContent='جارٍ التحديث…';
+  try{
+    const syms=JSON.stringify(COINS.map(c=>c.symbol));
+    const r=await fetchT(API+'ticker/24hr?symbols='+encodeURIComponent(syms),{cache:'no-store'});
+    if(!r.ok)throw 0;const arr=await r.json();
+    arr.forEach(d=>{market[d.symbol]=d});
+    lastOk=Date.now();renderCoins();checkAlerts();setStatus(true);
+  }catch{setStatus(false)}finally{refreshing=false}
+}
+async function loadSparks(){
+  await Promise.allSettled(COINS.map(async c=>{try{const r=await fetchT(API+'klines?symbol='+c.symbol+'&interval=1h&limit=24');if(!r.ok)return;const k=await r.json();sparks[c.symbol]=k.map(x=>Number(x[4]))}catch{}}));
+  renderCoins();
+}
+async function addCoin(){
+  const raw=$('newCoin').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/USDT$/,'');
+  if(raw.length<2||raw.length>12){toast('رمز غير صحيح');return}
+  const sym=raw+'USDT';
+  if(COINS.some(c=>c.symbol===sym)){toast('موجودة');return}
+  if(COINS.length>=MAX_COINS){toast('الحد الأقصى '+MAX_COINS);return}
+  try{const r=await fetchT(API+'ticker/24hr?symbol='+sym);if(!r.ok)throw 0;market[sym]=await r.json();COINS.push({symbol:sym,name:raw,short:raw,icon:raw[0]});saveCoins();fillSelect();renderCoins();$('newCoin').value='';toast('تمت إضافة '+raw);loadSparks()}catch{toast('لم أجد '+raw)}
+}
+function removeCoin(sym){COINS=COINS.filter(c=>c.symbol!==sym);saveCoins();fillSelect();renderCoins();toast('حُذفت')}
+
+function getAlerts(){try{return JSON.parse(localStorage.getItem('cr_alerts')||'[]')}catch{return[]}}
+function saveAlerts(a){try{localStorage.setItem('cr_alerts',JSON.stringify(a))}catch{};renderAlerts()}
+function renderAlerts(){
+  const a=getAlerts(),e=$('alertsList');
+  if(!a.length){e.innerHTML='<div class="empty">لا توجد تنبيهات.</div>';return}
+  e.innerHTML=a.map(x=>{
+    const c=COINS.find(z=>z.symbol===x.symbol);
+    return `<div class="alert ${x.triggered?'done':''}"><div><strong>${c?c.short:x.symbol}</strong> ${x.condition==='above'?'فوق':'تحت'} $${fmt(x.price)}<small>${x.triggered?'فُعّل':'بانتظار'}</small></div><div class="btns"><button class="small" data-del="${x.id}">حذف</button></div></div>`;
+  }).join('');
+}
+function notify(a,p){
+  const c=COINS.find(z=>z.symbol===a.symbol),n=c?c.short:a.symbol;
+  toast('🔔 '+n+' = $'+fmt(p));
+  if(notifEnabled&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('Crypto Radar',{body:n+' = $'+fmt(p)})}catch{}}
+  if(soundEnabled&&audioCtx){try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=880;g.gain.value=.12;o.start();o.stop(audioCtx.currentTime+.25)}catch{}}
+  if(navigator.vibrate){try{navigator.vibrate(200)}catch{}}
+}
+function checkAlerts(){
+  const a=getAlerts();let d=false;
+  a.forEach(x=>{const m=market[x.symbol];if(!m)return;const p=Number(m.lastPrice);
+    if(!x.triggered&&x.last!=null){const hit=(x.condition==='above'&&x.last<x.price&&p>=x.price)||(x.condition==='below'&&x.last>x.price&&p<=x.price);if(hit){x.triggered=true;notify(x,p)}}
+    if(x.last!==p){x.last=p;d=true}
+  });
+  if(d)saveAlerts(a);
+}
+$('addAlert').onclick=()=>{
+  const symbol=$('alertCoin').value,condition=$('alertCondition').value,price=Number($('alertPrice').value);
+  if(!Number.isFinite(price)||price<=0){toast('سعر غير صحيح');return}
+  const m=market[symbol];const a=getAlerts();
+  a.push({id:Date.now().toString(),symbol,condition,price,triggered:false,last:m?Number(m.lastPrice):null});
+  saveAlerts(a);$('alertPrice').value='';toast('أُضيف');
+};
+$('alertsList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b)saveAlerts(getAlerts().filter(x=>x.id!==b.dataset.del))});
+
+$('soundBtn').onclick=async()=>{soundEnabled=!soundEnabled;$('soundBtn').textContent=soundEnabled?'🔊 مفعّل':'🔊 الصوت';if(soundEnabled){try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume()}catch{}}toast(soundEnabled?'صوت مفعّل':'صوت مغلق')};
+$('notifBtn').onclick=async()=>{
+  if(!('Notification'in window)){toast('غير مدعوم');return}
+  if(notifEnabled){notifEnabled=false;$('notifBtn').textContent='🔔 الإشعارات';toast('مغلق');return}
+  let p=Notification.permission;
+  if(p==='default'){try{p=await Notification.requestPermission()}catch{}}
+  if(p==='granted'){notifEnabled=true;$('notifBtn').textContent='🔔 مفعّل';toast('إشعارات مفعّلة')}else toast('محجوبة');
+};
+$('refreshBtn').onclick=refresh;$('addCoinBtn').onclick=addCoin;
+$('newCoin').addEventListener('keydown',e=>{if(e.key==='Enter')addCoin()});
+$('coins').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b)removeCoin(b.dataset.rm)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+
+let dp=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('installBtn').hidden=false});
+$('installBtn').onclick=async()=>{if(!dp){toast('غير متاح');return}dp.prompt();dp=null;$('installBtn').hidden=true};
+if(matchMedia('(display-mode: standalone)').matches)$('installBtn').hidden=true;
+
+fillSelect();renderCoins();renderAlerts();refresh();loadSparks();
+setInterval(refresh,15000);setInterval(loadSparks,300000);
+</script>
+</body>
+</html>
