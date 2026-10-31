@@ -1,15 +1,17 @@
 {
   "name": "Crypto Radar",
   "short_name": "Crypto Radar",
-  "start_url": "./index.html",
+  "description": "رادار العملات الرقمية - أسعار لحظية وتنبيهات",
+  "start_url": "/crypto-radar/index.html",
   "display": "standalone",
   "background_color": "#0b1020",
   "theme_color": "#0b1020",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230b1020'/%3E%3Crect x='96' y='150' width='30' height='140' rx='6' fill='%2331d6a0'/%3E%3Crect x='105' y='120' width='12' height='200' rx='3' fill='%2331d6a0'/%3E%3Crect x='196' y='90' width='30' height='220' rx='6' fill='%23ff6b7d'/%3E%3Crect x='205' y='60' width='12' height='280' rx='3' fill='%23ff6b7d'/%3E%3Crect x='296' y='210' width='30' height='130' rx='6' fill='%2331d6a0'/%3E%3Crect x='305' y='180' width='12' height='190' rx='3' fill='%2331d6a0'/%3E%3Crect x='396' y='120' width='30' height='180' rx='6' fill='%2331d6a0'/%3E%3Crect x='405' y='90' width='12' height='240' rx='3' fill='%2331d6a0'/%3E%3C/svg%3E",
+      "src": "https://cdn-icons-png.flaticon.com/512/2933/2933245.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
