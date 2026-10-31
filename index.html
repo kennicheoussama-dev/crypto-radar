@@ -5,11 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0b1020">
 <title>Crypto Radar</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230b1020'/%3E%3Crect x='96' y='150' width='30' height='140' rx='6' fill='%2331d6a0'/%3E%3Crect x='105' y='120' width='12' height='200' rx='3' fill='%2331d6a0'/%3E%3Crect x='196' y='90' width='30' height='220' rx='6' fill='%23ff6b7d'/%3E%3Crect x='205' y='60' width='12' height='280' rx='3' fill='%23ff6b7d'/%3E%3Crect x='296' y='210' width='30' height='130' rx='6' fill='%2331d6a0'/%3E%3Crect x='305' y='180' width='12' height='190' rx='3' fill='%2331d6a0'/%3E%3Crect x='396' y='120' width='30' height='180' rx='6' fill='%2331d6a0'/%3E%3Crect x='405' y='90' width='12' height='240' rx='3' fill='%2331d6a0'/%3E%3C/svg%3E" type="image/svg+xml">
+<meta name="description" content="رادار العملات الرقمية - أسعار لحظية وتنبيهات">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crypto Radar">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{--bg:#0b1020;--panel:#121a2d;--panel2:#17223a;--text:#f3f6ff;--muted:#9aa8c3;--line:#26334e;--green:#31d6a0;--red:#ff6b7d;--blue:#79a7ff;--gold:#ffc96b}
 *{box-sizing:border-box}body{margin:0;background:#0b1020;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100vh}
-.wrap{max-width:1100px;margin:auto;padding:20px 16px 40px}
+.wrap{max-width:1100px;margin:auto;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#6c8cff,#35dfb0);display:grid;place-items:center;color:#091322;font-size:25px;font-weight:900}
 h1{font-size:22px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:4px}.pill{border:1px solid var(--line);background:#121a2dcc;border-radius:999px;padding:8px 12px;color:var(--muted);font-size:12px}
@@ -39,6 +46,10 @@ button:disabled{opacity:.5}button.primary{background:var(--blue);border-color:va
 .empty{color:var(--muted);font-size:13px;padding:10px 0}
 .status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;margin-top:14px}
 .dot{width:8px;height:8px;background:var(--gold);border-radius:50%}.dot.live{background:var(--green);box-shadow:0 0 10px #31d6a080}
+button.small{padding:6px 10px;font-size:12px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.pill.off{color:var(--red);border-color:#ff6b7d4d}
+.stale{opacity:.7}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#eaf2ff;color:#0b1426;padding:12px 18px;border-radius:12px;display:none;z-index:5;font-size:13px}
 @media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.formrow{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.grid{gap:9px}.coin{padding:12px}.formrow{grid-template-columns:1fr}.formrow button{grid-column:1/-1}}
@@ -96,7 +107,10 @@ let COINS=(()=>{try{const c=JSON.parse(localStorage.getItem('cr_coins'));if(Arra
 ]})();
 let market={},sparks={},indicators={},lastOk=0,refreshing=false;
 let soundEnabled=false,notifEnabled=false,audioCtx=null;
+loadCache();
 
+function saveCache(){try{localStorage.setItem('cr_cache',JSON.stringify({t:lastOk,market,sparks,indicators}))}catch{}}
+function loadCache(){try{const c=JSON.parse(localStorage.getItem('cr_cache'));if(c&&c.market){market=c.market;sparks=c.sparks||{};indicators=c.indicators||{};lastOk=c.t||0}}catch{}}
 function saveCoins(){try{localStorage.setItem('cr_coins',JSON.stringify(COINS))}catch{}}
 function fmt(n){if(!Number.isFinite(n))return'—';return n>=1000?n.toLocaleString('en-US',{maximumFractionDigits:2}):n>=0.01?n.toLocaleString('en-US',{maximumFractionDigits:6}):n.toLocaleString('en-US',{maximumFractionDigits:10})}
 function toast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3500)}
@@ -117,7 +131,7 @@ function renderCoins(){
     if(ind.rsi!=null){const cls=ind.rsi>=70?'bad':ind.rsi<=30?'good':'neutral';indHtml+=`<span class="ind-badge ${cls}">RSI ${ind.rsi.toFixed(1)}</span>`}
     if(ind.macd){const cls=ind.macd.hist>=0?'good':'bad';const sign=ind.macd.hist>=0?'+':'';indHtml+=`<span class="ind-badge ${cls}">MACD ${sign}${ind.macd.hist.toFixed(4)}</span>`}
     
-    return `<article class="coin"><button class="rm" data-rm="${c.symbol}">✕</button><div class="coinhead"><div class="coinicon">${c.icon}</div><div><div class="coinname">${c.name}</div><div class="symbol">${c.short} / USDT</div></div></div><div class="price">${d?'$'+fmt(p):'—'}</div><div class="change ${ch>=0?'positive':'negative'}">${d?(ch>=0?'▲ +':'▼ ')+ch.toFixed(2)+'%':'…'}</div>${spark(sparks[c.symbol])}<div class="ind">${indHtml}</div></article>`;
+    return `<article class="coin"><button class="rm" data-rm="${c.symbol}" aria-label="حذف ${c.short}">✕</button><div class="coinhead"><div class="coinicon">${c.icon}</div><div><div class="coinname">${c.name}</div><div class="symbol">${c.short} / USDT</div></div></div><div class="price">${d?'$'+fmt(p):'—'}</div><div class="change ${ch>=0?'positive':'negative'}">${d?(ch>=0?'▲ +':'▼ ')+ch.toFixed(2)+'%':'…'}</div>${spark(sparks[c.symbol])}<div class="ind">${indHtml}</div></article>`;
   }).join('');
 }
 function fillSelect(){const s=$('alertCoin'),o=s.value;s.innerHTML=COINS.map(c=>`<option value="${c.symbol}">${c.short}</option>`).join('');if(COINS.some(c=>c.symbol===o))s.value=o}
@@ -130,8 +144,15 @@ async function refresh(){
     const r=await fetch(API+'ticker/24hr?symbols='+encodeURIComponent(syms));
     if(!r.ok)throw 0;const arr=await r.json();
     arr.forEach(d=>{market[d.symbol]=d});
-    lastOk=Date.now();renderCoins();checkAlerts();$('statusText').textContent='متصل';$('lastUpdate').textContent='آخر تحديث: '+new Date(lastOk).toLocaleTimeString('ar-DZ');
-  }catch{$('statusText').textContent='تعذر الاتصال.';$('lastUpdate').textContent='غير متصل'}finally{refreshing=false}
+    lastOk=Date.now();saveCache();renderCoins();checkAlerts();
+    $('statusDot').classList.add('live');$('lastUpdate').classList.remove('off');
+    $('statusText').textContent='متصل';$('lastUpdate').textContent='آخر تحديث: '+new Date(lastOk).toLocaleTimeString('ar-DZ');
+  }catch{
+    $('statusDot').classList.remove('live');
+    $('statusText').textContent=navigator.onLine?'تعذر الاتصال بالخادم. تُعرض آخر أسعار محفوظة.':'لا يوجد اتصال بالإنترنت. تُعرض آخر أسعار محفوظة.';
+    $('lastUpdate').classList.add('off');
+    $('lastUpdate').textContent=lastOk?'غير متصل · آخر تحديث '+new Date(lastOk).toLocaleTimeString('ar-DZ'):'غير متصل';
+  }finally{refreshing=false}
 }
 
 async function loadSparks(){
@@ -144,7 +165,7 @@ async function loadSparks(){
       indicators[c.symbol]={rsi:calcRSI(closes,14),macd:calcMACD(closes)};
     }catch{}
   }));
-  renderCoins();
+  saveCache();renderCoins();
 }
 
 async function addCoin(){
@@ -163,13 +184,25 @@ function renderAlerts(){
   if(!a.length){e.innerHTML='<div class="empty">لا توجد تنبيهات.</div>';return}
   e.innerHTML=a.map(x=>{
     const c=COINS.find(z=>z.symbol===x.symbol);
-    return `<div class="alert ${x.triggered?'done':''}"><div><strong>${c?c.short:x.symbol}</strong> ${x.condition==='above'?'فوق':'تحت'} $${fmt(x.price)}<small>${x.triggered?'فُعّل':'بانتظار'}</small></div><div class="btns"><button class="small" data-del="${x.id}">حذف</button></div></div>`;
+    return `<div class="alert ${x.triggered?'done':''}"><div><strong>${c?c.short:x.symbol}</strong> ${x.condition==='above'?'فوق':'تحت'} $${fmt(x.price)}<small>${x.triggered?'فُعّل':'بانتظار'}</small></div><div class="btns">${x.triggered?`<button class="small" data-rearm="${x.id}">إعادة تفعيل</button>`:''}<button class="small" data-del="${x.id}">حذف</button></div></div>`;
   }).join('');
+}
+const isNative=!!(window.Capacitor&&typeof Capacitor.isNativePlatform==='function'&&Capacitor.isNativePlatform());
+const LN=()=>isNative&&window.Capacitor.Plugins?window.Capacitor.Plugins.LocalNotifications:null;
+async function showSystemNotification(title,body){
+  const ln=LN();
+  if(ln){try{await ln.schedule({notifications:[{id:Math.floor(Date.now()%2147483000),title,body}]});return}catch{}}
+  const opts={body,icon:'icon-192.png',badge:'icon-192.png',tag:'cr-alert',dir:'rtl',lang:'ar'};
+  try{
+    const reg='serviceWorker'in navigator?await navigator.serviceWorker.getRegistration():null;
+    if(reg){await reg.showNotification(title,opts);return}
+  }catch{}
+  try{new Notification(title,opts)}catch{}
 }
 function notify(a,p){
   const c=COINS.find(z=>z.symbol===a.symbol),n=c?c.short:a.symbol;
   toast('🔔 '+n+' = $'+fmt(p));
-  if(notifEnabled&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('Crypto Radar',{body:n+' = $'+fmt(p)})}catch{}}
+  if(notifEnabled&&'Notification'in window&&Notification.permission==='granted'){showSystemNotification('Crypto Radar',n+' = $'+fmt(p))}
   if(soundEnabled&&audioCtx){try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=880;g.gain.value=.12;o.start();o.stop(audioCtx.currentTime+.25)}catch{}}
   if(navigator.vibrate){try{navigator.vibrate(200)}catch{}}
 }
@@ -188,10 +221,22 @@ $('addAlert').onclick=()=>{
   a.push({id:Date.now().toString(),symbol,condition,price,triggered:false,last:m?Number(m.lastPrice):null});
   saveAlerts(a);$('alertPrice').value='';toast('أُضيف');
 };
-$('alertsList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b)saveAlerts(getAlerts().filter(x=>x.id!==b.dataset.del))});
+$('alertsList').addEventListener('click',e=>{
+  const d=e.target.closest('[data-del]');if(d){saveAlerts(getAlerts().filter(x=>x.id!==d.dataset.del));return}
+  const r=e.target.closest('[data-rearm]');
+  if(r){const a=getAlerts();const x=a.find(z=>z.id===r.dataset.rearm);if(x){const m=market[x.symbol];x.triggered=false;x.last=m?Number(m.lastPrice):null;saveAlerts(a);toast('أُعيد التفعيل')}}
+});
 
 $('soundBtn').onclick=async()=>{soundEnabled=!soundEnabled;$('soundBtn').textContent=soundEnabled?'🔊 الصوت مفعل':'🔊 تفعيل الصوت';if(soundEnabled){try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();await audioCtx.resume()}catch{}}toast(soundEnabled?'صوت مفعّل':'صوت مغلق')};
 $('notifBtn').onclick=async()=>{
+  const ln=LN();
+  if(ln){
+    if(notifEnabled){notifEnabled=false;$('notifBtn').textContent='🔔 الإشعارات';toast('مغلق');return}
+    try{let p=await ln.checkPermissions();if(p.display!=='granted')p=await ln.requestPermissions();
+      if(p.display==='granted'){notifEnabled=true;$('notifBtn').textContent='🔔 مفعّل';toast('إشعارات مفعّلة')}else toast('محجوبة')}
+    catch{toast('غير مدعوم')}
+    return;
+  }
   if(!('Notification'in window)){toast('غير مدعوم');return}
   if(notifEnabled){notifEnabled=false;$('notifBtn').textContent='🔔 الإشعارات';toast('مغلق');return}
   let p=Notification.permission;
@@ -203,7 +248,15 @@ $('newCoin').addEventListener('keydown',e=>{if(e.key==='Enter')addCoin()});
 $('coins').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b)removeCoin(b.dataset.rm)});
 
 fillSelect();renderCoins();renderAlerts();refresh();loadSparks();
-setInterval(refresh,15000);setInterval(loadSparks,300000);
+// Poll only while the page is visible; refresh immediately when it returns.
+let tPrice=setInterval(refresh,15000),tSpark=setInterval(loadSparks,300000);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){clearInterval(tPrice);clearInterval(tSpark)}
+  else{refresh();loadSparks();tPrice=setInterval(refresh,15000);tSpark=setInterval(loadSparks,300000)}
+});
+window.addEventListener('online',()=>{toast('عاد الاتصال');refresh();loadSparks()});
+window.addEventListener('offline',()=>{toast('انقطع الاتصال')});
+if(!isNative&&'serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
 </html>
