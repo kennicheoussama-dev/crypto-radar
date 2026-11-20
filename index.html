@@ -218,6 +218,8 @@ async function playBeep(){
     });
   }catch{}
 }
+function setNotifUI(){$('notifBtn').textContent=notifEnabled?'🔔 مفعّل':'🔔 الإشعارات'}
+function saveNotif(){try{localStorage.setItem('cr_notif',notifEnabled?'1':'0')}catch{}}
 function setSoundUI(){$('soundBtn').textContent=soundEnabled?'🔊 الصوت مفعل':'🔊 تفعيل الصوت'}
 function notify(a,p){
   const c=COINS.find(z=>z.symbol===a.symbol),n=c?c.short:a.symbol;
@@ -258,19 +260,21 @@ $('soundBtn').onclick=async()=>{
   }else toast('صوت مغلق');
 };
 $('notifBtn').onclick=async()=>{
+  if(notifEnabled){notifEnabled=false;saveNotif();setNotifUI();toast('الإشعارات مغلقة');return}
   const ln=LN();
+  let granted=false;
   if(ln){
-    if(notifEnabled){notifEnabled=false;$('notifBtn').textContent='🔔 الإشعارات';toast('مغلق');return}
-    try{let p=await ln.checkPermissions();if(p.display!=='granted')p=await ln.requestPermissions();
-      if(p.display==='granted'){notifEnabled=true;$('notifBtn').textContent='🔔 مفعّل';toast('إشعارات مفعّلة')}else toast('محجوبة')}
-    catch{toast('غير مدعوم')}
-    return;
+    try{let p=await ln.checkPermissions();if(p.display!=='granted')p=await ln.requestPermissions();granted=p.display==='granted'}catch{}
+  }else{
+    if(!('Notification'in window)){toast('الإشعارات غير مدعومة في هذا المتصفح');return}
+    let p=Notification.permission;
+    if(p==='default'){try{p=await Notification.requestPermission()}catch{}}
+    granted=p==='granted';
   }
-  if(!('Notification'in window)){toast('غير مدعوم');return}
-  if(notifEnabled){notifEnabled=false;$('notifBtn').textContent='🔔 الإشعارات';toast('مغلق');return}
-  let p=Notification.permission;
-  if(p==='default'){try{p=await Notification.requestPermission()}catch{}}
-  if(p==='granted'){notifEnabled=true;$('notifBtn').textContent='🔔 مفعّل';toast('إشعارات مفعّلة')}else toast('محجوبة');
+  if(!granted){toast('الإشعارات محجوبة. فعّلها من إعدادات الموقع أو التطبيق');return}
+  notifEnabled=true;saveNotif();setNotifUI();
+  await showSystemNotification('Crypto Radar','✅ الإشعارات تعمل');
+  toast('تم تفعيل الإشعارات - يجب أن يظهر إشعار تجريبي الآن');
 };
 $('refreshBtn').onclick=refresh;$('addCoinBtn').onclick=addCoin;
 $('newCoin').addEventListener('keydown',e=>{if(e.key==='Enter')addCoin()});
@@ -278,14 +282,12 @@ $('coins').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if
 
 try{soundEnabled=localStorage.getItem('cr_sound')==='1'}catch{}
 setSoundUI();
+try{if(localStorage.getItem('cr_notif')==='1'&&(LN()||('Notification'in window&&Notification.permission==='granted')))notifEnabled=true}catch{}
+setNotifUI();
 if(soundEnabled){const unlock=()=>{ensureAudio();document.removeEventListener('pointerdown',unlock)};document.addEventListener('pointerdown',unlock)}
 fillSelect();renderCoins();renderAlerts();refresh();loadSparks();
-// Poll only while the page is visible; refresh immediately when it returns.
-let tPrice=setInterval(refresh,15000),tSpark=setInterval(loadSparks,300000);
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){clearInterval(tPrice);clearInterval(tSpark)}
-  else{refresh();loadSparks();tPrice=setInterval(refresh,15000);tSpark=setInterval(loadSparks,300000)}
-});
+setInterval(refresh,15000);setInterval(loadSparks,300000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
 window.addEventListener('online',()=>{toast('عاد الاتصال');refresh();loadSparks()});
 window.addEventListener('offline',()=>{toast('انقطع الاتصال')});
 if(!isNative&&'serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
